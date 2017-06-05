@@ -1,4 +1,10 @@
 version: '2'
 services:
-  cassandra:
-    image: "cassandra"
+  db:
+    image: "orchardup/postgresql"
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRESQL_USER=localmessages
+      - POSTGRESQL_PASS=localmessages
+      - POSTGRESQL_DB=localmessages

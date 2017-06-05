@@ -1,3 +1,4 @@
+import database.PostgreSQLJDBC;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -31,7 +32,8 @@ public class AppMain extends Application<LocationsConfiguration> {
                 .healthChecks()
                 .register("template", healthCheck);
 
-        new CassandraAdapter("127.0.0.1").connect();
+
+        PostgreSQLJDBC.getInstance();
 
         environment.jersey().register(resource);
     }
