@@ -31,6 +31,8 @@ public class AppMain extends Application<LocationsConfiguration> {
                 .healthChecks()
                 .register("template", healthCheck);
 
+        new CassandraAdapter("127.0.0.1").connect();
+
         environment.jersey().register(resource);
     }
 
