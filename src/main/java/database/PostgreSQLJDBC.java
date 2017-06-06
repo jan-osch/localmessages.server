@@ -36,41 +36,13 @@ public class PostgreSQLJDBC {
         return c;
     }
 
-    private static String addParameterToSqlStatement(String baseSql, String parameterName, String value) {
-        return baseSql.replaceFirst(":" + parameterName, value);
-    }
-
     public static void executeSql(String sql) throws SQLException {
         Statement statement = connection.createStatement();
         statement.executeUpdate(sql);
         statement.close();
     }
 
-    public static PreparedStatement getNewPreparedStatement(String sql) throws SQLException {
-        return connection.prepareStatement(sql);
+    public static Statement createStatement() throws SQLException {
+        return connection.createStatement();
     }
-
-    public static void executePreparedStatement(PreparedStatement preparedStatement) throws SQLException {
-        preparedStatement.execute();
-        preparedStatement.close();
-    }
-
-    public static ResultSet executeSqlWithReturn(String sql) {
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
-            statementsToClose.put(resultSet, statement);
-            return resultSet;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static void closeStatementAfterResult(ResultSet resultSet) throws SQLException {
-        Statement statement = statementsToClose.get(resultSet);
-        resultSet.close();
-        statement.close();
-    }
-
 }

@@ -1,3 +1,4 @@
+import database.CreatePostgresDatabaseCommand;
 import database.PostgreSQLJDBC;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
@@ -34,6 +35,10 @@ public class AppMain extends Application<LocationsConfiguration> {
 
 
         PostgreSQLJDBC.getInstance();
+
+        boolean executed = new CreatePostgresDatabaseCommand().execute();
+
+
 
         environment.jersey().register(resource);
     }
