@@ -45,4 +45,9 @@ public class PostgreSQLJDBC {
     public static Statement createStatement() throws SQLException {
         return connection.createStatement();
     }
+
+    public static Connection getConnection() {
+        return connection;
+    }
+
 }

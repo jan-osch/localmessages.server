@@ -2,12 +2,12 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class Message {
     private String payload;
-    private Date createdAt;
+    private LocalDateTime createdAt;
     private Double latitude;
     private Double longitude;
     private List<Integer> receiversIds;
@@ -16,6 +16,18 @@ public class Message {
     private Integer id;
 
     public Message() {
+    }
+
+
+    public Message(String payload, LocalDateTime createdAt, Double latitude, Double longitude, List<Integer> receiversIds, Integer senderId, Boolean isPublic, Integer id) {
+        this.payload = payload;
+        this.createdAt = createdAt;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.receiversIds = receiversIds;
+        this.senderId = senderId;
+        this.isPublic = isPublic;
+        this.id = id;
     }
 
     @JsonProperty
@@ -28,11 +40,11 @@ public class Message {
     }
 
     @JsonProperty
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 

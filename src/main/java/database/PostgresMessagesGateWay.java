@@ -3,6 +3,10 @@ package database;
 import models.Message;
 import storage.MessageGateWay;
 
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PostgresMessagesGateWay implements MessageGateWay {
@@ -10,55 +14,171 @@ public class PostgresMessagesGateWay implements MessageGateWay {
 
     private static final String tableName = "messages";
 
-    @Override
+
     public List<Message> getAllMessages() {
-//        try {
-//            String sql = "SELECT id, created_at, lat, long, receivers, sender, is_public, payload FROM :tableName";
-//            sql = SqlUtils.addParam(sql, "tableName", tableName);
-//
-//            Statement statement = PostgreSQLJDBC.createStatement();
-//            ResultSet resultSet = statement.executeQuery(sql);
-//            resultSet.next();
-//
-//            ArrayList<User> list = new ArrayList<>();
-//
-//            while (resultSet.next()) {
-////                list.add(this.buildUserFromRow(resultSet));
-//            }
-//
-//            statement.close();
-//            return list;
-//
-//        } catch (SQLException ignored) {
-//            return null;
-//        }
-        //INSERT INTO messages (created_at, lat, long, recievers, sender, is_public, payload) VALUES (
-//        (TIMESTAMP '2017-06-06 21:22:01'), 123.231, 53.22, '{1, 2}', 3, FALSE, 'hello world' ) RETURNING id;
-        return null;
+        try {
+            Connection connection = PostgreSQLJDBC.getConnection();
+            PreparedStatement statement = connection.prepareStatement(
+                    "SELECT id, created_at, lat, long, receivers, sender, is_public, payload FROM messages"
+            );
+
+            ResultSet resultSet = statement.executeQuery();
+            ArrayList<Message> list = new ArrayList<>();
+            while (resultSet.next()) {
+                list.add(this.buildMessage(resultSet));
+            }
+
+            statement.close();
+            return list;
+        } catch (SQLException err) {
+            err.printStackTrace();
+            return null;
+        }
     }
 
     @Override
-    public List<Message> getAllMessagesByCoordinates(Double latitudeFrom, Double latitudeTo, Double longitudeFrom, Double longitudeTo) {
-        return null;
+    public Message getMessage(Integer id) {
+        try {
+            Connection connection = PostgreSQLJDBC.getConnection();
+            PreparedStatement statement = connection.prepareStatement(
+                    "SELECT id, created_at, lat, long, receivers, sender, is_public, payload FROM messages WHERE id = ?"
+            );
+            statement.setInt(1, id);
+
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+
+            Message message = this.buildMessage(resultSet);
+            statement.close();
+            return message;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
+    private Message buildMessage(ResultSet resultSet) throws SQLException {
+        Message message = new Message();
+
+        message.setId(resultSet.getInt("id"));
+        message.setCreatedAt(resultSet.getObject("created_at", LocalDateTime.class));
+        message.setLatitude(resultSet.getDouble("lat"));
+        message.setLongitude(resultSet.getDouble("long"));
+        message.setReceiversIds(parseReceivers(resultSet));
+        message.setPayload(resultSet.getString("payload"));
+        message.setPublic(resultSet.getBoolean("is_public"));
+        message.setSenderId(resultSet.getInt("sender"));
+
+        return message;
+    }
+
+    private List<Integer> parseReceivers(ResultSet resultSet) throws SQLException {
+        Array receiversAsArray = resultSet.getArray("receivers");
+        Integer[] rec = (Integer[]) receiversAsArray.getArray();
+
+        return Arrays.asList(rec);
+    }
+
+
     @Override
-    public List<Message> getAllMessagesByCoordinatesPublicOrReciever(Double latitudeFrom, Double latitudeTo, Double longitudeFrom, Double longitudeTo, Integer receiverId) {
-        return null;
+    public List<Integer> getMessagesByCoordinates(Double latitudeFrom, Double latitudeTo, Double longitudeFrom, Double longitudeTo, Integer receiverId) {
+        try {
+            Connection connection = PostgreSQLJDBC.getConnection();
+            PreparedStatement statement = connection.prepareStatement(
+                    "SELECT id FROM messages " +
+                            "WHERE long >= ? AND long <= ? AND lat >= ? AND lat <= ? AND " +
+                            "(is_public = TRUE OR ? = ANY(receivers))"
+            );
+            statement.setDouble(1, longitudeFrom);
+            statement.setDouble(2, longitudeTo);
+            statement.setDouble(3, latitudeFrom);
+            statement.setDouble(4, longitudeTo);
+            statement.setInt(5, receiverId);
+
+            ResultSet resultSet = statement.executeQuery();
+            ArrayList<Integer> integers = new ArrayList<>();
+            while (resultSet.next()) {
+                integers.add(resultSet.getInt(1));
+            }
+            statement.close();
+            return integers;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
     public Integer createMessage(Message message) {
-        return null;
+        try {
+            Connection connection = PostgreSQLJDBC.getConnection();
+            PreparedStatement statement = connection.prepareStatement(
+                    "INSERT INTO messages (created_at, lat, long, receivers, sender, is_public, payload) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id"
+            );
+            Integer[] receivers = message.getReceiversIds().toArray(new Integer[message.getReceiversIds().size()]);
+            Array receiversAsArray = connection.createArrayOf("int", receivers);
+
+            statement.setObject(1, message.getCreatedAt());
+            statement.setDouble(2, message.getLatitude());
+            statement.setDouble(3, message.getLongitude());
+            statement.setArray(4, receiversAsArray);
+            statement.setInt(5, message.getSenderId());
+            statement.setBoolean(6, message.getPublic());
+            statement.setString(7, message.getPayload());
+
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+
+            int createdMessageId = resultSet.getInt(1);
+            statement.close();
+            return createdMessageId;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
     public void removeMessageById(Integer id) {
+        try {
+            Connection connection = PostgreSQLJDBC.getConnection();
+            PreparedStatement statement = connection.prepareStatement("DELETE from messages WHERE id = ?");
+            statement.setInt(1, id);
+
+            statement.execute();
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
     }
 
     @Override
-    public void updateMessagebyId(Integer id, Message message) {
+    public void updateById(Integer id, Message message) {
+        try {
+            Connection connection = PostgreSQLJDBC.getConnection();
+            PreparedStatement statement = connection.prepareStatement(
+                    "UPDATE messages (created_at, lat, long, recievers, sender, is_public, payload) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?) WHERE id = ?"
+            );
+            Integer[] receivers = message.getReceiversIds().toArray(new Integer[message.getReceiversIds().size()]);
+            Array receiversAsArray = connection.createArrayOf("int", receivers);
 
+            statement.setObject(1, message.getCreatedAt());
+            statement.setDouble(2, message.getLatitude());
+            statement.setDouble(3, message.getLongitude());
+            statement.setArray(4, receiversAsArray);
+            statement.setInt(5, message.getSenderId());
+            statement.setBoolean(6, message.getPublic());
+            statement.setString(7, message.getPayload());
+            statement.setInt(8, id);
+
+            statement.execute();
+            statement.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

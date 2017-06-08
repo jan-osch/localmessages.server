@@ -1,8 +1,15 @@
 import database.CreatePostgresDatabaseCommand;
 import database.PostgreSQLJDBC;
+import database.PostgresMessagesGateWay;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import models.Message;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class AppMain extends Application<LocationsConfiguration> {
     public static void main(String[] args) throws Exception {
@@ -38,7 +45,32 @@ public class AppMain extends Application<LocationsConfiguration> {
 
         boolean executed = new CreatePostgresDatabaseCommand().execute();
 
+        ArrayList<Integer> integers = new ArrayList<>(Arrays.asList(1, 2, 3));
+        Message message = new Message("Hello world",
+                LocalDateTime.now(),
+                Double.valueOf(12.2d),
+                Double.valueOf(12.2d),
+                integers,
+                Integer.valueOf(1),
+                Boolean.valueOf(false),
+                null
+        );
 
+
+
+
+        PostgresMessagesGateWay gateWay = new PostgresMessagesGateWay();
+
+        gateWay.createMessage(message);
+        message.setSenderId(2);
+        gateWay.createMessage(message);
+        message.setSenderId(3);
+        gateWay.createMessage(message);
+
+        List<Message> allMessages = gateWay.getAllMessages();
+        for (Message m : allMessages) {
+            System.out.println(m.getSenderId() + " cca: " + m.getCreatedAt());
+        }
 
         environment.jersey().register(resource);
     }
