@@ -1,10 +1,12 @@
-import database.CreatePostgresDatabaseCommand;
-import database.PostgreSQLJDBC;
+import commands.CreateUsersTableCommand;
+import database.PostgresConnectionManager;
 import database.PostgresMessagesGateWay;
+import database.PostgresUserGateWay;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import models.Message;
+import models.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -41,9 +43,9 @@ public class AppMain extends Application<LocationsConfiguration> {
                 .register("template", healthCheck);
 
 
-        PostgreSQLJDBC.getInstance();
+        PostgresConnectionManager.getInstance();
 
-        boolean executed = new CreatePostgresDatabaseCommand().execute();
+        boolean executed = new CreateUsersTableCommand().execute();
 
         ArrayList<Integer> integers = new ArrayList<>(Arrays.asList(1, 2, 3));
         Message message = new Message("Hello world",
@@ -57,6 +59,11 @@ public class AppMain extends Application<LocationsConfiguration> {
         );
 
 
+        User jak = new User("jak");
+
+        PostgresUserGateWay way = new PostgresUserGateWay();
+
+        way.createUser(jak);
 
 
         PostgresMessagesGateWay gateWay = new PostgresMessagesGateWay();
