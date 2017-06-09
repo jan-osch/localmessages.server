@@ -128,8 +128,8 @@ public class PostgresMessagesGateWay implements MessageGateWay {
     public void updateById(Integer id, Message message) {
         try {
             PreparedStatement statement = this.connection.prepareStatement(
-                    "UPDATE messages (created_at, lat, long, recievers, sender, is_public, payload) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?) WHERE id = ?"
+                    "UPDATE messages SET created_at = ?, lat = ?, long =?, receivers =?, sender = ?, is_public = ?, payload =? " +
+                            "WHERE id = ?"
             );
             Integer[] receivers = message.getReceiversIds().toArray(new Integer[message.getReceiversIds().size()]);
             Array receiversAsArray = this.connection.createArrayOf("int", receivers);

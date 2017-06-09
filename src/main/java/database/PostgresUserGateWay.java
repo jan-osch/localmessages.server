@@ -72,12 +72,12 @@ public class PostgresUserGateWay implements UserGateWay {
 
     public void updateUserById(Integer id, User user) {
         try {
-            PreparedStatement statement = this.connection.prepareStatement("UPDATE :tableName SET name = ? WHERE id = ?");
-            String sql = "UPDATE users SET name = ? WHERE id = ? ";
+            PreparedStatement statement = this.connection.prepareStatement("UPDATE users SET name = ? WHERE id = ?");
 
             statement.setString(1, user.getName());
             statement.setInt(2, id);
-            statement.execute(sql);
+            statement.execute();
+
             statement.close();
 
         } catch (SQLException ignored) {
