@@ -1,10 +1,19 @@
+import commands.Command;
+import commands.CreateMessagesTableCommand;
+import commands.CreateUsersTableCommand;
 import controllers.MessagesResource;
 import controllers.UsersResource;
-import database.PostgresGateWayFactory;
+import database.PostgresDAOFactory;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import strategies.GetMessagesBySquareSelection;
+import strategies.GetMessagesByLocationStrategy;
+import strategies.GetMessagesCompositeStrategy;
+import strategies.GetPrivateMessagesByDistance;
+import strategies.GetPublicMessagesByDistance;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AppMain extends Application<LocationsConfiguration> {
     public static void main(String[] args) throws Exception {
@@ -18,21 +27,43 @@ public class AppMain extends Application<LocationsConfiguration> {
 
     @Override
     public void initialize(Bootstrap<LocationsConfiguration> bootstrap) {
-        // nothing to do yet
+        for (Command c : this.prepareApplication()) {
+            c.execute();
+        }
+        System.out.println("Application ready to startg");
     }
 
     @Override
     public void run(LocationsConfiguration configuration, Environment environment) {
-        PostgresGateWayFactory factory = new PostgresGateWayFactory();
-        final UsersResource resource = new UsersResource(factory);
-//
-        final SimpleHealthCheck healthCheck = new SimpleHealthCheck();
-        environment
-                .healthChecks()
-                .register("template", healthCheck);
+        final PostgresDAOFactory factory = new PostgresDAOFactory();
 
+        final UsersResource resource = new UsersResource(factory);
+
+
+        final SimpleHealthCheck healthCheck = new SimpleHealthCheck();
+        final MessagesResource messagesResource = new MessagesResource(factory, this.prepareStrategy(configuration));
+
+        environment.healthChecks().register("template", healthCheck);
         environment.jersey().register(resource);
-        environment.jersey().register(new MessagesResource(factory, new GetMessagesBySquareSelection(100000d)));
+        environment.jersey().register(messagesResource);
+    }
+
+    private GetMessagesByLocationStrategy prepareStrategy(LocationsConfiguration configuration) {
+        GetMessagesCompositeStrategy compositeStrategy = new GetMessagesCompositeStrategy();
+
+        compositeStrategy.addChild(new GetPrivateMessagesByDistance(configuration.getDistancePrivate()));
+        compositeStrategy.addChild(new GetPublicMessagesByDistance(configuration.getDistancePublic()));
+
+        return compositeStrategy;
+    }
+
+    private List<Command> prepareApplication() {
+        ArrayList<Command> list = new ArrayList<>();
+
+        list.add(new CreateUsersTableCommand());
+        list.add(new CreateMessagesTableCommand());
+
+        return list;
     }
 
 }

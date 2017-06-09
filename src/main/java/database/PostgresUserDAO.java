@@ -1,17 +1,17 @@
 package database;
 
 import models.User;
-import storage.UserGateWay;
+import storage.UserDAO;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostgresUserGateWay implements UserGateWay {
+public class PostgresUserDAO implements UserDAO {
 
     private final Connection connection;
 
-    public PostgresUserGateWay() {
+    public PostgresUserDAO() {
         this.connection = PostgresConnectionManager.getInstance().getConnection();
     }
 

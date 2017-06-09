@@ -1,2 +1,4 @@
-template: Hello, %s!
-defaultName: Stranger
+distancePrivate: 500d
+distancePublic: 100d
+
+

@@ -1,9 +1,9 @@
 package strategies;
 
-import storage.MessageGateWay;
+import storage.MessageDAO;
 
 import java.util.List;
 
 public interface GetMessagesByLocationStrategy {
-    List<Integer> getMessagesIds(MessageGateWay messageGateWay, Double latitude, Double longitude, Integer receiver);
+    List<Integer> getIds(MessageDAO messageDAO, Double latitude, Double longitude, Integer receiver);
 }

@@ -4,7 +4,7 @@ import models.User;
 
 import java.util.List;
 
-public interface UserGateWay {
+public interface UserDAO {
     List<User> getAllUsers();
 
     User getUserById(Integer id);

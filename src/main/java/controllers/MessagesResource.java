@@ -3,8 +3,8 @@ package controllers;
 import com.codahale.metrics.annotation.Timed;
 import models.Message;
 import models.MessageList;
-import storage.GatewayFactory;
-import storage.MessageGateWay;
+import storage.DAOFactory;
+import storage.MessageDAO;
 import strategies.GetMessagesByLocationStrategy;
 
 import javax.validation.Valid;
@@ -16,18 +16,18 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class MessagesResource {
 
-    private final MessageGateWay messageGateWay;
+    private final MessageDAO messageDAO;
     private GetMessagesByLocationStrategy strategy;
 
-    public MessagesResource(GatewayFactory gatewayFactory, GetMessagesByLocationStrategy strategy) {
-        this.messageGateWay = gatewayFactory.createMessageGateWay();
+    public MessagesResource(DAOFactory DAOFactory, GetMessagesByLocationStrategy strategy) {
+        this.messageDAO = DAOFactory.createMessageDAO();
         this.strategy = strategy;
     }
 
     @GET
     @Timed
     public MessageList getAllMessages() {
-        List<Message> list = this.messageGateWay.getAllMessages();
+        List<Message> list = this.messageDAO.getAllMessages();
 
         return new MessageList(list, list.size(), 0);
     }
@@ -35,28 +35,28 @@ public class MessagesResource {
     @POST
     @Timed
     public Integer createMessage(@Valid Message message) {
-        return this.messageGateWay.createMessage(message);
+        return this.messageDAO.createMessage(message);
     }
 
     @GET
     @Path("{id}")
     @Timed
     public Message getMessageBydId(@PathParam("id") final int id) {
-        return this.messageGateWay.getMessage(id);
+        return this.messageDAO.getMessage(id);
     }
 
     @DELETE
     @Path("{id}")
     @Timed
     public void removeMessageById(@PathParam("id") final int id) {
-        this.messageGateWay.removeMessageById(id);
+        this.messageDAO.removeMessageById(id);
     }
 
     @PUT
     @Path("{id}")
     @Timed
     public void updateMessageById(@PathParam("id") final int id, @Valid Message message) {
-        this.messageGateWay.updateById(id, message);
+        this.messageDAO.updateById(id, message);
     }
 
     @GET
@@ -66,6 +66,6 @@ public class MessagesResource {
                                                @QueryParam("lat") final double lat,
                                                @QueryParam("long") final double lon){
 
-        return this.strategy.getMessagesIds(this.messageGateWay, lat, lon, id);
+        return this.strategy.getIds(this.messageDAO, lat, lon, id);
     }
 }

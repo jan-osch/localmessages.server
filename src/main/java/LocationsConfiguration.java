@@ -1,31 +1,31 @@
-import io.dropwizard.Configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.validator.constraints.NotEmpty;
+import io.dropwizard.Configuration;
 
 public class LocationsConfiguration extends Configuration {
-    @NotEmpty
-    private String template;
 
-    @NotEmpty
-    private String defaultName = "Stranger";
+    private Double distancePrivate;
+    private Double distancePublic;
 
-    @JsonProperty
-    public String getTemplate() {
-        return template;
+    public LocationsConfiguration() {
     }
 
     @JsonProperty
-    public void setTemplate(String template) {
-        this.template = template;
+    public Double getDistancePrivate() {
+        return distancePrivate;
     }
 
     @JsonProperty
-    public String getDefaultName() {
-        return defaultName;
+    public void setDistancePrivate(Double distancePrivate) {
+        this.distancePrivate = distancePrivate;
     }
 
     @JsonProperty
-    public void setDefaultName(String name) {
-        this.defaultName = name;
+    public Double getDistancePublic() {
+        return distancePublic;
+    }
+
+    @JsonProperty
+    public void setDistancePublic(Double distancePublic) {
+        this.distancePublic = distancePublic;
     }
 }

@@ -1,7 +1,7 @@
 package database;
 
 import models.Message;
-import storage.MessageGateWay;
+import storage.MessageDAO;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class PostgresMessagesGateWay implements MessageGateWay {
+public class PostgresMessagesDAO implements MessageDAO {
 
     private final Connection connection;
 
-    public PostgresMessagesGateWay() {
+    public PostgresMessagesDAO() {
         this.connection = PostgresConnectionManager.getInstance().getConnection();
     }
 
@@ -37,6 +37,57 @@ public class PostgresMessagesGateWay implements MessageGateWay {
         }
     }
 
+    @Override
+    public List<Integer> getPrivateMessages(Double latitudeFrom, Double latitudeTo, Double longitudeFrom, Double longitudeTo, Integer receiverId) {
+        try {
+            PreparedStatement statement = this.connection.prepareStatement(
+                    "SELECT id FROM messages " +
+                            "WHERE long >= ? AND long <= ? AND lat >= ? AND lat <= ? AND ? = ANY(receivers)"
+            );
+            statement.setDouble(1, longitudeFrom);
+            statement.setDouble(2, longitudeTo);
+            statement.setDouble(3, latitudeFrom);
+            statement.setDouble(4, latitudeTo);
+            statement.setInt(5, receiverId);
+
+            ResultSet resultSet = statement.executeQuery();
+            ArrayList<Integer> integers = new ArrayList<>();
+            while (resultSet.next()) {
+                integers.add(resultSet.getInt(1));
+            }
+            statement.close();
+            return integers;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public List<Integer> getPublicMessages(Double latitudeFrom, Double latitudeTo, Double longitudeFrom, Double longitudeTo) {
+        try {
+            PreparedStatement statement = this.connection.prepareStatement(
+                    "SELECT id FROM messages " +
+                            "WHERE long >= ? AND long <= ? AND lat >= ? AND lat <= ? AND is_public = TRUE"
+            );
+            statement.setDouble(1, longitudeFrom);
+            statement.setDouble(2, longitudeTo);
+            statement.setDouble(3, latitudeFrom);
+            statement.setDouble(4, latitudeTo);
+
+            ResultSet resultSet = statement.executeQuery();
+            ArrayList<Integer> integers = new ArrayList<>();
+            while (resultSet.next()) {
+                integers.add(resultSet.getInt(1));
+            }
+            statement.close();
+            return integers;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public Message getMessage(Integer id) {
         try {
             PreparedStatement statement = this.connection.prepareStatement(
@@ -50,33 +101,6 @@ public class PostgresMessagesGateWay implements MessageGateWay {
             Message message = this.buildMessage(resultSet);
             statement.close();
             return message;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-
-    public List<Integer> getMessagesByCoordinates(Double latitudeFrom, Double latitudeTo, Double longitudeFrom, Double longitudeTo, Integer receiverId) {
-        try {
-            PreparedStatement statement = this.connection.prepareStatement(
-                    "SELECT id FROM messages " +
-                            "WHERE long >= ? AND long <= ? AND lat >= ? AND lat <= ? AND " +
-                            "(is_public = TRUE OR ? = ANY(receivers))"
-            );
-            statement.setDouble(1, longitudeFrom);
-            statement.setDouble(2, longitudeTo);
-            statement.setDouble(3, latitudeFrom);
-            statement.setDouble(4, longitudeTo);
-            statement.setInt(5, receiverId);
-
-            ResultSet resultSet = statement.executeQuery();
-            ArrayList<Integer> integers = new ArrayList<>();
-            while (resultSet.next()) {
-                integers.add(resultSet.getInt(1));
-            }
-            statement.close();
-            return integers;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;

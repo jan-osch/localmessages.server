@@ -3,8 +3,8 @@ package controllers;
 import com.codahale.metrics.annotation.Timed;
 import models.User;
 import models.UserList;
-import storage.GatewayFactory;
-import storage.UserGateWay;
+import storage.DAOFactory;
+import storage.UserDAO;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -15,43 +15,43 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class UsersResource {
 
-    private final UserGateWay userGateWay;
+    private final UserDAO userDAO;
 
-    public UsersResource(GatewayFactory gatewayFactory) {
-        this.userGateWay = gatewayFactory.createUserGateWay();
+    public UsersResource(DAOFactory DAOFactory) {
+        this.userDAO = DAOFactory.createUserDAO();
     }
 
     @GET
     @Timed
     public UserList getAllUsers() {
-        List<User> users = this.userGateWay.getAllUsers();
+        List<User> users = this.userDAO.getAllUsers();
         return new UserList(users, users.size(), 0);
     }
 
     @POST
     @Timed
     public Integer createUser(@Valid User user) {
-        return this.userGateWay.createUser(user);
+        return this.userDAO.createUser(user);
     }
 
     @PUT
     @Path("{id}")
     @Timed
     public void updateUser(@PathParam("id") final int id, @Valid User user) {
-        this.userGateWay.updateUserById(id, user);
+        this.userDAO.updateUserById(id, user);
     }
 
     @GET
     @Path("{id}")
     @Timed
     public User getUserById(@PathParam("id") final int id) {
-        return this.userGateWay.getUserById(id);
+        return this.userDAO.getUserById(id);
     }
 
     @DELETE
     @Path("{id}")
     @Timed
     public void removeUserById(@PathParam("id") final int id) {
-        this.userGateWay.removeUserById(id);
+        this.userDAO.removeUserById(id);
     }
 }
