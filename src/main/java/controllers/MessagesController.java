@@ -14,12 +14,12 @@ import java.util.List;
 
 @Path("messages")
 @Produces(MediaType.APPLICATION_JSON)
-public class MessagesResource {
+public class MessagesController {
 
     private final MessageDAO messageDAO;
     private GetMessagesByLocationStrategy strategy;
 
-    public MessagesResource(DAOFactory DAOFactory, GetMessagesByLocationStrategy strategy) {
+    public MessagesController(DAOFactory DAOFactory, GetMessagesByLocationStrategy strategy) {
         this.messageDAO = DAOFactory.createMessageDAO();
         this.strategy = strategy;
     }

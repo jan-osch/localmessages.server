@@ -1,8 +1,8 @@
 import commands.Command;
 import commands.CreateMessagesTableCommand;
 import commands.CreateUsersTableCommand;
-import controllers.MessagesResource;
-import controllers.UsersResource;
+import controllers.MessagesController;
+import controllers.UserController;
 import database.PostgresDAOFactory;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
@@ -37,15 +37,15 @@ public class AppMain extends Application<LocationsConfiguration> {
     public void run(LocationsConfiguration configuration, Environment environment) {
         final PostgresDAOFactory factory = new PostgresDAOFactory();
 
-        final UsersResource resource = new UsersResource(factory);
+        final UserController resource = new UserController(factory);
 
 
         final SimpleHealthCheck healthCheck = new SimpleHealthCheck();
-        final MessagesResource messagesResource = new MessagesResource(factory, this.prepareStrategy(configuration));
+        final MessagesController messagesController = new MessagesController(factory, this.prepareStrategy(configuration));
 
         environment.healthChecks().register("template", healthCheck);
         environment.jersey().register(resource);
-        environment.jersey().register(messagesResource);
+        environment.jersey().register(messagesController);
     }
 
     private GetMessagesByLocationStrategy prepareStrategy(LocationsConfiguration configuration) {

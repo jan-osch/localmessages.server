@@ -13,11 +13,11 @@ import java.util.List;
 
 @Path("/users")
 @Produces(MediaType.APPLICATION_JSON)
-public class UsersResource {
+public class UserController {
 
     private final UserDAO userDAO;
 
-    public UsersResource(DAOFactory DAOFactory) {
+    public UserController(DAOFactory DAOFactory) {
         this.userDAO = DAOFactory.createUserDAO();
     }
 
