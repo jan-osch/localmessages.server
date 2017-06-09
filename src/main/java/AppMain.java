@@ -30,7 +30,7 @@ public class AppMain extends Application<LocationsConfiguration> {
         for (Command c : this.prepareApplication()) {
             c.execute();
         }
-        System.out.println("Application ready to startg");
+        System.out.println("Application ready to start");
     }
 
     @Override

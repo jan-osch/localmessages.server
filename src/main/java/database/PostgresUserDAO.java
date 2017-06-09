@@ -20,7 +20,6 @@ public class PostgresUserDAO implements UserDAO {
 
             PreparedStatement statement = this.connection.prepareStatement("SELECT id, name FROM users");
             ResultSet resultSet = statement.executeQuery();
-            resultSet.next();
             ArrayList<User> list = new ArrayList<>();
 
             while (resultSet.next()) {
